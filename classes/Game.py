@@ -23,7 +23,7 @@ class Game:
         
     def setup_game(self):
         # Cooldowns
-        self.collision_par_cooldown = 0.1
+        self.collision_par_cooldown = 0.3
         self.collision_raq_cooldown = 0.3
         self.cooldown_par = pg.Vector2(0.0, 0.0)
         self.cooldown_raq_jogador = pg.Vector2(0.0, 0.0)
@@ -202,8 +202,12 @@ class Game:
                     fator_influencia_y = 0.0005
                     self.dir_da_bola.y += velo_raquete.y * fator_influencia_y
 
-                    if velo_raquete.x / 2000 > abs(velo_raquete.y):
-                        self.dir_da_bola.y /= 5
+                    if velo_raquete.x / 3 > abs(velo_raquete.y):
+                        if abs(self.dir_da_bola.y) >= abs(self.dir_da_bola.x):
+                            self.dir_da_bola.y /= 100
+                    elif random.randint(1, 10) == 1:
+                        self.velocidade_bola = 450
+                            
                     
                     self.dir_da_bola = self.dir_da_bola.normalize()
 
@@ -342,7 +346,7 @@ class Game:
 
     def run(self):
         while self.running:
-            self.dt = self.clock.tick(60) / 1000
+            self.dt = self.clock.tick(120) / 1000
             
             # Eventos
             for event in pg.event.get():
