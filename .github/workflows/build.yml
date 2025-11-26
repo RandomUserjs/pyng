@@ -42,6 +42,13 @@ jobs:
       run: |
         pyinstaller -F --name Pyng --add-data "Fonts:Fonts" --add-data "Sons:Sons" --add-data "classes:classes" app.py
 
+    # 🎯 CORREÇÃO LINUX: Mover o binário para a raiz antes de empacotar 🎯
+    - name: Move Linux Binary to Root
+      if: runner.os == 'Linux'
+      run: |
+        # Renomeia para facilitar a identificação e garante que ele esteja na raiz do artefato.
+        mv dist/Pyng Pyng-Linux
+
     # --- Etapa de Compilação Windows (One-Dir) ---
     - name: Compile Executable (Windows; One-Dir)
       if: runner.os == 'Windows'
@@ -62,8 +69,8 @@ jobs:
       with:
         name: pyng-build-${{ matrix.os }}
         path: |
-          dist/Pyng
-          pyng-win.zip
+          Pyng-Linux  # Novo caminho para o binário Linux (na raiz do runner)
+          pyng-win.zip  # Caminho para o ZIP do Windows (na raiz do runner)
         retention-days: 7
   
   release:
@@ -78,11 +85,15 @@ jobs:
     
     steps:
     - name: Download all build artifacts
-      # CORREÇÃO: Usamos o 'pattern' para garantir que os arquivos certos sejam baixados
+      # Usamos o 'pattern' para garantir que os arquivos certos sejam baixados
       uses: actions/download-artifact@v4
       with:
         path: artifacts
         pattern: pyng-build-*
+
+    # Passo de Debug para confirmar a estrutura de pastas baixadas
+    - name: List downloaded files (for debug)
+      run: ls -R artifacts
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
@@ -100,7 +111,7 @@ jobs:
         
         # CAMINHOS DE ANEXO CORRIGIDOS
         files: |
-          artifacts/pyng-build-ubuntu-latest/Pyng
+          artifacts/pyng-build-ubuntu-latest/Pyng-Linux
           artifacts/pyng-build-windows-latest/pyng-win.zip
         overwrite_files: true
       env:
