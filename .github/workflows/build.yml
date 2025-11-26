@@ -67,8 +67,8 @@ jobs:
       with:
         name: pyng-build-${{ matrix.os }}
         path: |
-          dist/Pyng     # Binário Linux (arquivo único)
-          pyng-win.zip  # ZIP do Windows (arquivo único)
+          dist/         # Binário Linux (arquivo único)
+          dist/Pyng/pyng-win.zip  # ZIP do Windows (arquivo único)
         retention-days: 7
   
   release:
