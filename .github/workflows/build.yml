@@ -56,6 +56,7 @@ jobs:
       if: runner.os == 'Windows'
       run: |
         # O arquivo ZIP é criado na raiz do runner (./pyng-win.zip)
+        # 7z é a ferramenta padrão do runner do Windows
         7z a -r pyng-win.zip dist/Pyng/
       shell: cmd
 
@@ -65,8 +66,8 @@ jobs:
       with:
         name: pyng-build-${{ matrix.os }}
         path: |
-          dist/Pyng        # Caminho para o binário Linux (dentro de dist/)
-          pyng-win.zip     # Caminho para o ZIP do Windows (criado na raiz do runner)
+          dist/Pyng        # Caminho para o binário Linux (One-File)
+          pyng-win.zip     # Caminho para o ZIP do Windows (na raiz do runner)
         retention-days: 7
   
   release:
