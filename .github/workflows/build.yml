@@ -53,15 +53,22 @@ jobs:
         # Windows usa o app.spec (que configura o One-Dir por padrão)
         pyinstaller app.spec
 
-    # --- Etapa de Upload Artifacts (CORRIGIDA) ---
-    - name: Compress and Upload Artifacts
+    # --- ETAPA DE PREPARAÇÃO DOS ARTEFATOS ---
+    - name: Zip Windows Artifact
+      if: runner.os == 'Windows'
+      run: |
+          # Compacta toda a pasta dist/Pyng/ em um único arquivo ZIP
+          7z a -r pyng-win.zip dist/Pyng/
+      shell: cmd # Usa o shell de comando para o 7z
+
+    # --- PASSO DE UPLOAD DE ARTEFATOS ---
+    - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        # Uploads a pasta dist inteira, que conterá:
-        # - O ARQUIVO 'Pyng' (Linux) OU
-        # - A PASTA 'Pyng/' (Windows)
         name: pyng-build-${{ matrix.os }}
-        path: dist/ 
+        path: |
+          dist/Pyng     # Binário Linux (arquivo único)
+          pyng-win.zip  # ZIP do Windows (arquivo único)
         retention-days: 7
   
   release:
