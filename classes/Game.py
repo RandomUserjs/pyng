@@ -1,4 +1,7 @@
-from Caminhos import Caminho
+if __name__ == "__main__":
+    from Caminhos import Caminho
+else:
+    from classes.Caminhos import Caminho  
 import pygame as pg
 import random
 

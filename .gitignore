@@ -7,3 +7,4 @@
 ./classes/Gamini.py
 *.prof
 ./classes/__pycache__/
+*.pyc

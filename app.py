@@ -3,7 +3,9 @@ from classes.Menus import Main
 import pygame as pg
 
 def run_game():
-    pass
+    main = Main()
+    main.mostrar_menus()
+    pg.quit()
 
 """def run_game():
     game = Game()
