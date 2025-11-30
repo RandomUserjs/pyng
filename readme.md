@@ -4,7 +4,7 @@
 
 Pyng é um jogo inspirado no pong, escrito em python com movimentos em 3 dimensões e rastreamento do movimento do mouse, escrito na biblioteca pygame.
 
-# Como instalar
+# Como instalar:
 
 ## Método 1: Baixe o executável
 
@@ -75,6 +75,8 @@ python app.py
 pyinstaller app.spec
 ```
 
+Após a compilação, o executável ficará disponível na pasta `./dist/Pyng`
+
 ### Windows:
 
 Inicie e ative um venv do python:
@@ -101,3 +103,5 @@ py app.py
 ```bash
 pyinstaller app.spec
 ```
+
+Após a compilação, o executável ficará disponível na pasta `./dist/Pyng`
