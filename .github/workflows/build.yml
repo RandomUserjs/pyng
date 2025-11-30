@@ -113,6 +113,12 @@ jobs:
           Assets incluídos:
           - Binário Linux
           - Executável Windows (Compactado)
+
+          Como baixar e executar:
+          1. Vá para a seção de "Releases" deste repositório.
+          2. Baixe o arquivo correspondente ao seu sistema operacional (Pyng-Linux se você usa linux, ou pyng-win.zip se você usa Windows).
+          3. Torne o arquivo executável (Apenas Linux) com: chmod +x Pyng-Linux)
+          3. Extraia o conteúdo (apenas Windows) e execute o arquivo (Pyng-Linux para usuários do Linux, ou Pyng.exe dentro da pasta dist/Pyng para usuários de Windows).
         draft: false
         prerelease: false
         

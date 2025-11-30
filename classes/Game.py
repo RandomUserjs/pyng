@@ -8,7 +8,7 @@ def resource_path(relative_path):
     """Obtém o caminho absoluto para recursos, compatível com PyInstaller."""
     try:
         # Caminho gerado pelo PyInstaller em tempo de execução
-        base_path = sys._MEIPASS
+        base_path = sys._MEIPASS # type: ignore
     except AttributeError:
         # Caminho padrão (desenvolvimento)
         base_path = os.path.abspath(".")
