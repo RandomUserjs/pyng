@@ -1,9 +1,6 @@
-if __name__ == "__main__":
-    from Caminhos import Caminho
-else:
-    from classes.Caminhos import Caminho  
+from .Caminhos import Caminho
+from .Game import Game
 import pygame as pg
-
 
 class Main:
     def __init__(self):
@@ -31,9 +28,9 @@ class Main:
         self.caminho = Caminho()
 
         self.hue_titulo = 0.0
-        self.hue_opcoes = 0.0
-        self.escala_atual = 1.0  # Escala atual (interpolada)
-        self.escala_alvo = 1.0   # Escala alvo
+        self.hue_botao_play = 0.0
+        self.escala_titulo_atual = 1.0  # Escala atual (interpolada)
+        self.escala_titulo_alvo = 1.0   # Escala alvo
 
         self.rotacao_atual = 0.0
         self.rotacao_alvo = 0.0
@@ -48,12 +45,17 @@ class Main:
         # estado do botão do mouse no frame anterior (para detectar release)
         self.prev_mouse_pressed = False
 
-        self.alpha_opcoes_atual = 255
-        self.alpha_opcoes_alvo = 255
+        # Ajustes do botão "Play"
+        self.alpha_botao_play_atual = 255
+        self.alpha_botao_play_alvo = 255
 
         self.cor_hover_atual = pg.Color(255, 255, 255)
         self.cor_hover_alvo = pg.Color(255, 255, 255)
         self.s = 0
+
+        self.escala_botao_play_atual = 1.0
+        self.escala_botao_play_alvo = 1.0
+
         
     def desenhar_tela(self):
         self.screen.fill("black")
@@ -75,15 +77,15 @@ class Main:
         # --- Se está em animação de clique, ela sobrescreve o hover ---
         if self.clicking:
             velocidade = self.click_speed * self.dt
-            self.escala_atual = pg.math.lerp(self.escala_atual, self.escala_clique_alvo, velocidade)
-            self.alpha_opcoes_alvo = 100
+            self.escala_titulo_atual = pg.math.lerp(self.escala_titulo_atual, self.escala_clique_alvo, max(0, min(1, velocidade)))
+            self.alpha_botao_play_atual = 100
 
             # quando atingir o alvo, troca de fase (down -> up) ou encerra
                 # apenas uma vez por transição: se estávamos na fase 'down', passamos para 'up'
             if self.click_phase == 'down':
                 # Verifica se mouse está sobre o texto (hover verdadeiro)
                 if self.rect_titulo_pyng.collidepoint(self.pos_mouse):
-                    self.alpha_opcoes_alvo = 100
+                    self.alpha_botao_play_atual = 100
                     # Vai direto para 1.5 com rotação
                     self.click_phase = 'down'
                     self.escala_clique_alvo = 0.5
@@ -101,58 +103,66 @@ class Main:
                 self.rotacao_alvo = 0.0
             
             # Interpola rotação suavemente durante toda animação de clique
-            self.rotacao_atual = pg.math.lerp(self.rotacao_atual, self.rotacao_alvo, velocidade)
+            self.rotacao_atual = pg.math.lerp(self.rotacao_atual, self.rotacao_alvo, max(0, min(1,velocidade)))
         else:
             # Comportamento normal de hover (aplica alvo de hover)
             if self.rect_titulo_pyng.collidepoint(self.pos_mouse):
-                self.escala_alvo = 1.5
+                self.escala_titulo_alvo = 1.5
                 self.rotacao_alvo = -10.0
-                self.alpha_opcoes_alvo = 100
+                self.alpha_botao_play_atual = 100
             else:
-                self.escala_alvo = 1.0
+                self.escala_titulo_alvo = 1.0
                 self.rotacao_alvo = 0.0
-                self.alpha_opcoes_alvo = 255
+                self.alpha_botao_play_alvo = 255
 
-            velocidade_lerp_hover = 8 * self.dt  # Velocidade de interpolação para hover
-            self.escala_atual = pg.math.lerp(self.escala_atual, self.escala_alvo, max(0, min(1, velocidade_lerp_hover)))
+            velocidade_lerp_hover = max(0, min(1, 8 * self.dt))  # Velocidade de interpolação para hover
+            self.escala_titulo_atual = pg.math.lerp(self.escala_titulo_atual, self.escala_titulo_alvo, velocidade_lerp_hover)
             self.rotacao_atual = pg.math.lerp(self.rotacao_atual, self.rotacao_alvo, velocidade_lerp_hover)
 
         # Aplicar escala e rotação ao sprite final
-        nova_largura = max(1, int(self.rect_titulo_pyng.width * self.escala_atual))
-        nova_altura = max(1, int(self.rect_titulo_pyng.height * self.escala_atual))
+        nova_largura = max(1, int(self.rect_titulo_pyng.width * self.escala_titulo_atual))
+        nova_altura = max(1, int(self.rect_titulo_pyng.height * self.escala_titulo_atual))
         self.titulo_pyng = pg.transform.smoothscale(self.titulo_pyng, (nova_largura, nova_altura))
         self.titulo_pyng = pg.transform.rotate(self.titulo_pyng, self.rotacao_atual)
         self.rect_titulo_pyng = self.titulo_pyng.get_rect(center=self.rect_titulo_pyng.center)
 
         self.screen.blit(self.titulo_pyng, self.rect_titulo_pyng)
 
-    def mostrar_opcoes(self):
-        self.hue_opcoes = (self.hue_opcoes + 0.5) % 360
+    def mostrar_botao_play(self):
+        self.hue_botao_play = (self.hue_botao_play + 0.5) % 360
         self.botao_play = self.RasterForgeRegular(50).render("Play", True, "white")
         self.rect_botao_play = self.botao_play.get_rect()
         self.rect_botao_play.topleft = (int(self.screen.get_width() / 2 - self.rect_botao_play.width / 2), int(self.screen.get_height() / 2 ))
-        self.alpha_opcoes_atual = pg.math.lerp(self.alpha_opcoes_atual, self.alpha_opcoes_alvo, 10 * self.dt)
-        self.botao_play.set_alpha(int(self.alpha_opcoes_atual))
+        self.alpha_botao_play_atual = pg.math.lerp(self.alpha_botao_play_atual, self.alpha_botao_play_alvo, max(0, min(1, 8 * self.dt)))
+        self.botao_play.set_alpha(int(self.alpha_botao_play_atual))
         if self.rect_botao_play.collidepoint(self.pos_mouse):
             if self.s < 70:
                 self.s += 200 * self.dt
             else:
                 self.s = 70
-            self.cor_hover_alvo.hsva = (self.hue_opcoes, self.s, 100, 100)
-            self.cor_hover_atual = self.cor_hover_atual.lerp(self.cor_hover_alvo, 10 * self.dt)
+            self.escala_botao_play_alvo = 1.2
+            
+            
+            self.cor_hover_alvo.hsva = (self.hue_botao_play, self.s, 100, 100)
+            self.cor_hover_atual = self.cor_hover_atual.lerp(self.cor_hover_alvo, max(0, min(1, 10 * self.dt)))
             self.botao_play = self.RasterForgeRegular(50).render("Play", True, self.cor_hover_atual)
-            self.botao_play.set_alpha(int(self.alpha_opcoes_atual))
+            self.botao_play.set_alpha(int(self.alpha_botao_play_atual))
             
         else:
             if self.s > 0:
                 self.s -= 200 * self.dt
             else:
                 self.s = 0
-            self.cor_hover_alvo.hsva = (self.hue_opcoes, max(0, min(70, self.s)), 100, 100)
-            self.cor_hover_atual = self.cor_hover_atual.lerp(self.cor_hover_alvo, 10 * self.dt)
+            self.escala_botao_play_alvo = 1.0
+            self.cor_hover_alvo.hsva = (self.hue_botao_play, max(0, min(70, self.s)), 100, 100)
+            self.cor_hover_atual = self.cor_hover_atual.lerp(self.cor_hover_alvo, max(0, min(1, 10 * self.dt)))
             self.botao_play = self.RasterForgeRegular(50).render("Play", True, self.cor_hover_atual)
-            self.botao_play.set_alpha(int(self.alpha_opcoes_atual))
-
+            self.botao_play.set_alpha(int(self.alpha_botao_play_atual))
+        self.escala_botao_play_atual = pg.math.lerp(self.escala_botao_play_atual, self.escala_botao_play_alvo, max(0, min(1, 10 * self.dt)))
+        nova_largura = max(1, int(self.rect_botao_play.width * self.escala_botao_play_atual))
+        nova_altura = max(1, int(self.rect_botao_play.height * self.escala_botao_play_atual))
+        self.botao_play = pg.transform.smoothscale(self.botao_play, (nova_largura, nova_altura))
+        self.rect_botao_play = self.botao_play.get_rect(center=self.rect_botao_play.center)
         self.screen.blit(self.botao_play, self.rect_botao_play)
 
 
@@ -163,7 +173,6 @@ class Main:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     self.running = False
-
             # Atualiza posição do mouse e estado do botão esquerdo
             self.pos_mouse = pg.mouse.get_pos()
             mouse_pressed = pg.mouse.get_pressed()[0]
@@ -195,13 +204,18 @@ class Main:
                         self.click_phase = 'up'
                         self.escala_clique_alvo = 1.0
                         self.rotacao_alvo = 0.0
+            if mouse_pressed and self.rect_botao_play.collidepoint(self.pos_mouse):
+                    # Inicia o jogo
+                    game = Game()
+                    game.run()
+                    pg.quit()
 
             # atualiza o estado anterior do mouse para detectar release no próximo frame
             self.prev_mouse_pressed = mouse_pressed
 
             self.desenhar_tela()
             self.mostrar_titulo()
-            self.mostrar_opcoes()
+            self.mostrar_botao_play()
         
             pg.display.flip()
 

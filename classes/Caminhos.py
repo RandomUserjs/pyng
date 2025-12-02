@@ -1,7 +1,7 @@
 import os 
 import sys
 
-class Caminho():
+class Caminho:
     def obter_caminho(self, caminho_relativo):
         self.caminho_relativo = caminho_relativo
         """Obtém o caminho absoluto para recursos, compatível com PyInstaller."""

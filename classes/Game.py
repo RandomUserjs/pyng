@@ -1,7 +1,4 @@
-if __name__ == "__main__":
-    from Caminhos import Caminho
-else:
-    from classes.Caminhos import Caminho  
+from .Caminhos import Caminho
 import pygame as pg
 import random
 
@@ -16,7 +13,7 @@ class Game:
 
         # Mouse
         pg.display.set_caption("Pyng")  # Título da janela
-        # pg.mouse.set_visible(False)  # Torna o cursor invisível
+        pg.mouse.set_visible(False)  # Torna o cursor invisível
         pg.event.set_grab(True)
         self.mouse_captured = True
         
@@ -128,7 +125,7 @@ class Game:
         
         velo_lerp = min(1.0, 15.0 * self.dt)
         self.alpha_atual_jog = pg.math.lerp(self.alpha_atual_jog, self.alpha_alvo_jog, velo_lerp)
-        self.placar_jogador.set_alpha(int(self.alpha_atual_jog))
+        
 
         if self.ponto_jog_placar != self.pontuacao_jogador:
             self.azul_alvo_jog = 100
@@ -140,7 +137,7 @@ class Game:
             self.azul_alvo_jog = 255
 
         self.placar_jogador = self.fonte_placar.render(f"{self.pontuacao_jogador}", True, (255, 255, int(self.azul_jog)))
-
+        self.placar_jogador.set_alpha(int(self.alpha_atual_jog))
         self.screen.blit(self.placar_jogador, self.rect_placar_jogador)
         
         # ---------------------------------
@@ -155,7 +152,6 @@ class Game:
             self.delay_opon = self.delay_padrao  # Começa o delay de 1s
         
         self.alpha_atual_opon = pg.math.lerp(self.alpha_atual_opon, self.alpha_alvo_opon, velo_lerp)
-        self.placar_oponente.set_alpha(int(self.alpha_atual_opon))
 
         if self.ponto_opon_placar != self.pontuacao_oponente:
             self.azul_alvo_opon = 100
@@ -167,7 +163,7 @@ class Game:
             self.azul_alvo_opon = 255
 
         self.placar_oponente = self.fonte_placar.render(f"{self.pontuacao_oponente}", True, (255, 255, int(self.azul_opon)))
-
+        self.placar_oponente.set_alpha(int(self.alpha_atual_opon))
         self.screen.blit(self.placar_oponente, self.rect_placar_oponente)
 
 
@@ -336,7 +332,7 @@ class Game:
 
                     # Trecho que calcula a velocidade da raquete no momento da colisão
                     velo_raquete = pg.Vector2(0, 0)
-                    fator_influencia_x = 0.05
+                    fator_influencia_x = 0.09
                     fator_influencia_y = 0.05
 
                     if self.dt > 0:
@@ -374,7 +370,7 @@ class Game:
 
                     self.dir_da_bola = self.dir_da_bola.normalize()
 
-                    velocidade_max = 1000
+                    velocidade_max = 1100
 
                     if self.velocidade_bola > velocidade_max: 
                         self.velocidade_bola = velocidade_max
@@ -437,7 +433,7 @@ class Game:
 
                     self.dir_da_bola = self.dir_da_bola.normalize()
 
-                    velocidade_max = 1000
+                    velocidade_max = 1100
 
                     if self.velocidade_bola > velocidade_max: 
                         self.velocidade_bola = velocidade_max
@@ -447,7 +443,6 @@ class Game:
                     self.vezes_colidiu += 1
 
                 elif self.checar_colisao_raquete_oponente("y") and self.cooldown_raq_oponente.y <= 0:
-                    print(self.cooldown_raq_oponente.y)
                     self.cooldown_par = pg.Vector2(0.0, 0.0)
 
                     self.cooldown_raq_oponente.y = self.collision_raq_cooldown.y
@@ -600,7 +595,6 @@ class Game:
             self.atualizar_raquete_oponente()
             self.atualizar_bola()
             self.atualizar_placar()
-            print(self.cooldown_raq_jogador)
             
             # Renderização
             pg.display.flip()
