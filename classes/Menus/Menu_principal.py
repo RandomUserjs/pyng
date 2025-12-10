@@ -1,5 +1,6 @@
-from .Caminhos import Caminho
-from .Game import Game
+from classes.Caminhos import Caminho
+from classes.Game import Game
+from classes.Menus.Menu_opcoes import Opcoes
 import pygame as pg
 
 class Main:
@@ -29,6 +30,7 @@ class Main:
 
         self.hue_titulo = 0.0
         self.hue_botao_play = 0.0
+        self.hue_botao_opcoes = 0.0
         self.escala_titulo_atual = 1.0  # Escala atual (interpolada)
         self.escala_titulo_alvo = 1.0   # Escala alvo
 
@@ -49,12 +51,25 @@ class Main:
         self.alpha_botao_play_atual = 255
         self.alpha_botao_play_alvo = 255
 
-        self.cor_hover_atual = pg.Color(255, 255, 255)
-        self.cor_hover_alvo = pg.Color(255, 255, 255)
-        self.s = 0
+        self.cor_hover_play_atual = pg.Color(255, 255, 255)
+        self.cor_hover_play_alvo = pg.Color(255, 255, 255)
+        self.s_play = 0
 
         self.escala_botao_play_atual = 1.0
         self.escala_botao_play_alvo = 1.0
+
+        # Ajustes do botão "Opções"
+        self.alpha_botao_opcoes_atual = 255
+        self.alpha_botao_opcoes_alvo = 255
+
+        self.cor_hover_opcoes_atual = pg.Color(255, 255, 255)
+        self.cor_hover_opcoes_alvo = pg.Color(255, 255, 255)
+        self.s_opcoes = 0
+
+        self.escala_botao_opcoes_atual = 1.0
+        self.escala_botao_opcoes_alvo = 1.0
+
+
 
         
     def desenhar_tela(self):
@@ -78,14 +93,14 @@ class Main:
         if self.clicking:
             velocidade = self.click_speed * self.dt
             self.escala_titulo_atual = pg.math.lerp(self.escala_titulo_atual, self.escala_clique_alvo, max(0, min(1, velocidade)))
-            self.alpha_botao_play_atual = 100
 
             # quando atingir o alvo, troca de fase (down -> up) ou encerra
                 # apenas uma vez por transição: se estávamos na fase 'down', passamos para 'up'
             if self.click_phase == 'down':
                 # Verifica se mouse está sobre o texto (hover verdadeiro)
                 if self.rect_titulo_pyng.collidepoint(self.pos_mouse):
-                    self.alpha_botao_play_atual = 100
+                    self.alpha_botao_play_alvo = 100
+                    self.alpha_botao_opcoes_alvo = 100
                     # Vai direto para 1.5 com rotação
                     self.click_phase = 'down'
                     self.escala_clique_alvo = 0.5
@@ -109,11 +124,13 @@ class Main:
             if self.rect_titulo_pyng.collidepoint(self.pos_mouse):
                 self.escala_titulo_alvo = 1.5
                 self.rotacao_alvo = -10.0
-                self.alpha_botao_play_atual = 100
+                self.alpha_botao_play_alvo = 100
+                self.alpha_botao_opcoes_alvo = 100
             else:
                 self.escala_titulo_alvo = 1.0
                 self.rotacao_alvo = 0.0
                 self.alpha_botao_play_alvo = 255
+                self.alpha_botao_opcoes_alvo = 255
 
             velocidade_lerp_hover = max(0, min(1, 8 * self.dt))  # Velocidade de interpolação para hover
             self.escala_titulo_atual = pg.math.lerp(self.escala_titulo_atual, self.escala_titulo_alvo, velocidade_lerp_hover)
@@ -133,30 +150,30 @@ class Main:
         self.botao_play = self.RasterForgeRegular(50).render("Play", True, "white")
         self.rect_botao_play = self.botao_play.get_rect()
         self.rect_botao_play.topleft = (int(self.screen.get_width() / 2 - self.rect_botao_play.width / 2), int(self.screen.get_height() / 2 ))
-        self.alpha_botao_play_atual = pg.math.lerp(self.alpha_botao_play_atual, self.alpha_botao_play_alvo, max(0, min(1, 8 * self.dt)))
+        self.alpha_botao_play_atual = pg.math.lerp(self.alpha_botao_play_atual, self.alpha_botao_play_alvo, max(0, min(1, 15 * self.dt)))
         self.botao_play.set_alpha(int(self.alpha_botao_play_atual))
         if self.rect_botao_play.collidepoint(self.pos_mouse):
-            if self.s < 70:
-                self.s += 200 * self.dt
+            if self.s_play < 70:
+                self.s_play += 200 * self.dt
             else:
-                self.s = 70
+                self.s_play = 70
             self.escala_botao_play_alvo = 1.2
             
             
-            self.cor_hover_alvo.hsva = (self.hue_botao_play, self.s, 100, 100)
-            self.cor_hover_atual = self.cor_hover_atual.lerp(self.cor_hover_alvo, max(0, min(1, 10 * self.dt)))
-            self.botao_play = self.RasterForgeRegular(50).render("Play", True, self.cor_hover_atual)
+            self.cor_hover_play_alvo.hsva = (self.hue_botao_play, self.s_play, 100, 100)
+            self.cor_hover_play_atual = self.cor_hover_play_atual.lerp(self.cor_hover_play_alvo, max(0, min(1, 10 * self.dt)))
+            self.botao_play = self.RasterForgeRegular(50).render("Play", True, self.cor_hover_play_atual)
             self.botao_play.set_alpha(int(self.alpha_botao_play_atual))
             
         else:
-            if self.s > 0:
-                self.s -= 200 * self.dt
+            if self.s_play > 0:
+                self.s_play -= 200 * self.dt
             else:
-                self.s = 0
+                self.s_play = 0
             self.escala_botao_play_alvo = 1.0
-            self.cor_hover_alvo.hsva = (self.hue_botao_play, max(0, min(70, self.s)), 100, 100)
-            self.cor_hover_atual = self.cor_hover_atual.lerp(self.cor_hover_alvo, max(0, min(1, 10 * self.dt)))
-            self.botao_play = self.RasterForgeRegular(50).render("Play", True, self.cor_hover_atual)
+            self.cor_hover_play_alvo.hsva = (self.hue_botao_play, max(0, min(70, self.s_play)), 100, 100)
+            self.cor_hover_play_atual = self.cor_hover_play_atual.lerp(self.cor_hover_play_alvo, max(0, min(1, 10 * self.dt)))
+            self.botao_play = self.RasterForgeRegular(50).render("Play", True, self.cor_hover_play_atual)
             self.botao_play.set_alpha(int(self.alpha_botao_play_atual))
         self.escala_botao_play_atual = pg.math.lerp(self.escala_botao_play_atual, self.escala_botao_play_alvo, max(0, min(1, 10 * self.dt)))
         nova_largura = max(1, int(self.rect_botao_play.width * self.escala_botao_play_atual))
@@ -165,6 +182,41 @@ class Main:
         self.rect_botao_play = self.botao_play.get_rect(center=self.rect_botao_play.center)
         self.screen.blit(self.botao_play, self.rect_botao_play)
 
+    def mostrar_botao_opcoes(self):
+            self.hue_botao_opcoes = (self.hue_botao_opcoes + 0.5) % 360
+            self.botao_opcoes = self.RasterForgeRegular(50).render("Opções", True, "white")
+            self.rect_botao_opcoes = self.botao_opcoes.get_rect()
+            self.rect_botao_opcoes.topleft = (int(self.screen.get_width() / 2 - self.rect_botao_opcoes.width / 2), int(self.screen.get_height() / 2 + (2 * self.rect_botao_play.height)))
+            self.alpha_botao_opcoes_atual = pg.math.lerp(self.alpha_botao_opcoes_atual, self.alpha_botao_opcoes_alvo, max(0, min(1, 15 * self.dt)))
+            self.botao_opcoes.set_alpha(int(self.alpha_botao_opcoes_atual))
+            if self.rect_botao_opcoes.collidepoint(self.pos_mouse):
+                if self.s_opcoes < 70:
+                    self.s_opcoes += 200 * self.dt
+                else:
+                    self.s_opcoes = 70
+                self.escala_botao_opcoes_alvo = 1.2
+                self.cor_hover_opcoes_alvo.hsva = (self.hue_botao_opcoes, self.s_opcoes, 100, 100)
+                self.cor_hover_opcoes_atual = self.cor_hover_opcoes_atual.lerp(self.cor_hover_opcoes_alvo, max(0, min(1, 10 * self.dt)))
+                self.botao_opcoes = self.RasterForgeRegular(50).render("Opções", True, self.cor_hover_opcoes_atual)
+                self.botao_opcoes.set_alpha(int(self.alpha_botao_opcoes_atual))
+                
+            else:
+                if self.s_opcoes > 0:
+                    self.s_opcoes -= 200 * self.dt
+                else:
+                    self.s_opcoes = 0
+                self.escala_botao_opcoes_alvo = 1.0
+                self.cor_hover_opcoes_alvo.hsva = (self.hue_botao_opcoes, max(0, min(70, self.s_opcoes)), 100, 100)
+                self.cor_hover_opcoes_atual = self.cor_hover_opcoes_atual.lerp(self.cor_hover_opcoes_alvo, max(0, min(1, 10 * self.dt)))
+                self.botao_opcoes = self.RasterForgeRegular(50).render("Opções", True, self.cor_hover_opcoes_atual)
+                self.botao_opcoes.set_alpha(int(self.alpha_botao_opcoes_atual))
+            self.escala_botao_opcoes_atual = pg.math.lerp(self.escala_botao_opcoes_atual, self.escala_botao_opcoes_alvo, max(0, min(1, 10 * self.dt)))
+            self.botao_opcoes.set_alpha(int(self.alpha_botao_opcoes_atual))
+            nova_largura = max(1, int(self.rect_botao_opcoes.width * self.escala_botao_opcoes_atual))
+            nova_altura = max(1, int(self.rect_botao_opcoes.height * self.escala_botao_opcoes_atual))
+            self.botao_opcoes = pg.transform.smoothscale(self.botao_opcoes, (nova_largura, nova_altura))
+            self.rect_botao_opcoes = self.botao_opcoes.get_rect(center=self.rect_botao_opcoes.center)
+            self.screen.blit(self.botao_opcoes, self.rect_botao_opcoes)
 
     def mostrar_menus(self):
         while self.running:
@@ -209,6 +261,11 @@ class Main:
                     game = Game()
                     game.run()
                     pg.quit()
+            if mouse_pressed and self.rect_botao_opcoes.collidepoint(self.pos_mouse):
+                    # Abre o menu de opções
+                    menu_opcoes = Opcoes()
+                    menu_opcoes.mostrar_menus()
+                    
 
             # atualiza o estado anterior do mouse para detectar release no próximo frame
             self.prev_mouse_pressed = mouse_pressed
@@ -216,7 +273,8 @@ class Main:
             self.desenhar_tela()
             self.mostrar_titulo()
             self.mostrar_botao_play()
-        
+            self.mostrar_botao_opcoes()
+
             pg.display.flip()
 
 

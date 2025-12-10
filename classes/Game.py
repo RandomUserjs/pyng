@@ -1,4 +1,5 @@
-from .Caminhos import Caminho
+from classes.Caminhos import Caminho
+from classes.States import States
 import pygame as pg
 import random
 
@@ -27,6 +28,19 @@ class Game:
         
     def setup_game(self):
         self.caminho = Caminho()
+        self.state = States()
+
+        self.layouts = ["qwerty", "colemak"]
+        self.layout_selecionado = "qwerty"
+
+        arquivo_config = self.state.carregar_config()
+        # Load existing config if present
+        if arquivo_config and isinstance(arquivo_config, dict): 
+            # Filtra o valor da chave e verifica se está na lista de layouts permitidos
+            layout = arquivo_config.get("keyboard_layout")
+            if layout in self.layouts:
+                self.layout_selecionado = layout
+        print(f"Layout do teclado selecionado: {self.layout_selecionado}")
         # Cooldowns
         self.collision_par_cooldown = 0.3
         self.collision_raq_cooldown = pg.Vector2(2.0, 2.0)
@@ -51,9 +65,9 @@ class Game:
         self.tamanho_raquetes = pg.Vector2(20, 80)
 
         # Zona segura para checar o jogador (metade esquerda + buffer)
-        self.zona_jogador = self.screen.get_width() * (3/5) 
+        self.zona_jogador = self.screen.get_width() * (3/5) - (self.screen.get_width() / 5) / 2
         # Zona segura para checar o oponente (metade direita + buffer)
-        self.zona_oponente = self.screen.get_width() * (2/5)
+        self.zona_oponente = self.screen.get_width() / 2
         
         
         # Raquete Jogador
@@ -87,6 +101,7 @@ class Game:
 
         # Sons
         self.som_colisao_raquete = pg.mixer.Sound(self.caminho.obter_caminho("Sons/hit_paddle.wav"))
+        self.som_ponto = pg.mixer.Sound(self.caminho.obter_caminho("Sons/score_point.wav"))
 
 
     def desenhar_jogo(self):
@@ -306,10 +321,12 @@ class Game:
             # colisão no eixo X (verifica e reinicia a bola)
             if self.pos_da_bola.x + self.raio_da_bola >= self.screen.get_width() -2:
                 self.pontuacao_jogador += 1
+                self.som_ponto.play()
                 self.reiniciar_bola()
 
             elif self.pos_da_bola.x - self.raio_da_bola <= 2:
                 self.pontuacao_oponente += 1
+                self.som_ponto.play()
                 self.reiniciar_bola()
                 
             # colisão no eixo Y (verifica e aplica cooldown)
@@ -410,19 +427,24 @@ class Game:
 
                     self.cooldown_raq_oponente.x = self.collision_raq_cooldown.x
                     self.cooldown_raq_oponente.y = self.collision_raq_cooldown.y
-
+                    
+                    self.som_colisao_raquete.play()
+                    
                     # Trecho que calcula a velocidade da raquete no momento da colisão
                     velo_raquete = pg.Vector2(0, 0)
                     fator_influencia_x = 0.005
                     fator_influencia_y = 0.00005
 
-                    self.dir_raq_oponente = self.dir_raq_oponente.normalize() if self.dir_raq_oponente.length() > 0 else pg.Vector2(0, 0)
+                    dir_raq_oponente = self.dir_raq_oponente.normalize() if self.dir_raq_oponente.length() > 0 else pg.Vector2(0, 0)
 
                     if self.dt > 0:
                         velo_raquete = self.dir_raq_oponente * self.velo_raq_oponente / self.dt
                         # print(velo_raquete)
 
-                    self.dir_da_bola.x *= -1
+                    if self.dir_da_bola.x < 0:
+                        self.dir_da_bola.x += dir_raq_oponente.x
+                    else:
+                        self.dir_da_bola.x *= -1
 
                     if self.dir_raq_oponente.x < 0:
                         self.velocidade_bola += abs(velo_raquete.x) * fator_influencia_x
@@ -520,11 +542,13 @@ class Game:
         # Quando em cooldown, limitamos apenas a posição visual; NÃO sobrescrever self.pos_raquete_jogador
         if self.cooldown_raq_jogador.x > 0 and self.cooldown_raq_jogador.y > 0 and self.dir_da_bola.x > 0:
             pos_raquete_imaginaria.x = min(pos_raquete_imaginaria.x, self.pos_da_bola.x - 5 - self.raio_da_bola - self.tamanho_raquetes.x / 2 )
-            # <-- removida a atribuição self.pos_raquete_jogador = pos_raquete_imaginaria
+            
 
-            if self.pos_da_bola.x >= self.screen.get_width() * 2/5:
+            if self.pos_da_bola.x >= self.zona_jogador:
                 # só ajusta a posição visual (não a usada para colisão)
                 pos_raquete_imaginaria.x = pos_raquete_imaginaria.x
+                self.cooldown_raq_jogador = pg.Vector2(0.0, 0.0)
+ 
 
         if pos_raquete_imaginaria.x + self.tamanho_raquetes.x >= self.screen.get_width() * (2/5):
             pos_raquete_imaginaria.x = self.screen.get_width() * (2/5) - self.tamanho_raquetes.x
@@ -542,14 +566,24 @@ class Game:
         self.velo_raq_oponente = 800
         self.dir_raq_oponente = pg.Vector2(0, 0)
         key = pg.key.get_pressed()
-        if key[pg.K_w]:
-            self.dir_raq_oponente.y -= 1
-        if key[pg.K_r]:
-            self.dir_raq_oponente.y += 1
-        if key[pg.K_a]:
-            self.dir_raq_oponente.x -= 1
-        if key[pg.K_s]:
-            self.dir_raq_oponente.x += 1
+        if self.layout_selecionado == "colemak":
+            if key[pg.K_w]:
+                self.dir_raq_oponente.y -= 1
+            if key[pg.K_r]:
+                self.dir_raq_oponente.y += 1
+            if key[pg.K_a]:
+                self.dir_raq_oponente.x -= 1
+            if key[pg.K_s]:
+                self.dir_raq_oponente.x += 1
+        else:  # qwerty
+            if key[pg.K_w]:
+                self.dir_raq_oponente.y -= 1
+            if key[pg.K_s]:
+                self.dir_raq_oponente.y += 1
+            if key[pg.K_a]:
+                self.dir_raq_oponente.x -= 1
+            if key[pg.K_d]:
+                self.dir_raq_oponente.x += 1
         if self.dir_raq_oponente.length() > 0:
             self.dir_raq_oponente = self.dir_raq_oponente.normalize()
             self.pos_raquete_oponente += self.dir_raq_oponente * self.velo_raq_oponente * self.dt
@@ -570,6 +604,8 @@ class Game:
         # Limita o meio
         if self.pos_raquete_oponente.x <= self.screen.get_width() * (3/5):
             self.pos_raquete_oponente.x = self.screen.get_width() * (3/5) 
+        if self.pos_da_bola.x <= self.zona_oponente:
+            self.cooldown_raq_oponente = pg.Vector2(0.0, 0.0)
 
         if self.cooldown_raq_oponente.x > 0:
             pg.draw.rect(self.screen, "grey", pg.Rect(self.pos_raquete_oponente.x, self.pos_raquete_oponente.y, self.tamanho_raquetes.x, self.tamanho_raquetes.y))

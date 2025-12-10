@@ -1,6 +1,11 @@
-from classes.Game import Game
-from classes.Menus import Main
+from classes.Menus.Menu_principal import Main
+from classes.Menus.Menu_opcoes import Opcoes
 import pygame as pg
+
+"""def run_game():
+    op = Opcoes()
+    op.mostrar_menus()
+    pg.quit()"""
 
 def run_game():
     main = Main()

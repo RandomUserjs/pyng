@@ -31,7 +31,7 @@ Extraia a pasta zipada usando o Winrar ou 7zip, ou o explorer (Windows 11+).
 Depois navegue para `./pyng-win/dist/Pyng`, e execute o arquivo `Pyng.exe`
 
 > [!CAUTION]
-> Não tire o arquivo da pasta `Pyng`, para que o jogo funcione, suas dependencias se encontram na pasta `_internal`, NÃO A MOVA NEM A EXCLUA!
+> Não tire o arquivo da pasta `Pyng`, para que o jogo funcione, suas dependências se encontram na pasta `_internal`, NÃO A MOVA NEM A EXCLUA!
 
 ## Método 2: Compile o código
 
