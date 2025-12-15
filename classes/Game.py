@@ -101,7 +101,9 @@ class Game:
 
         # Sons
         self.som_colisao_raquete = pg.mixer.Sound(self.caminho.obter_caminho("Sons/hit_paddle.wav"))
+        self.som_colisao_raquete.set_volume(0.3)
         self.som_ponto = pg.mixer.Sound(self.caminho.obter_caminho("Sons/score_point.wav"))
+        self.som_ponto.set_volume(0.7)
 
 
     def desenhar_jogo(self):

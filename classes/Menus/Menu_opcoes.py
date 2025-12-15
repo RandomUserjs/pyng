@@ -23,8 +23,11 @@ class Opcoes:
         # UI state
         self.layouts = ["qwerty", "colemak"]
         self.layout_selecionado = "qwerty"
-
-        arquivo_config = self.states.carregar_config()
+        try:
+            arquivo_config = self.states.carregar_config()
+        except Exception:
+            self.states.salvar_config(self.layout_selecionado)
+            arquivo_config = self.states.carregar_config()
         # Load existing config if present
         if arquivo_config and isinstance(arquivo_config, dict): 
             # Filtra o valor da chave e verifica se está na lista de layouts permitidos
