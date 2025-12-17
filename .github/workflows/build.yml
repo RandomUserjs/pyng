@@ -1,4 +1,4 @@
-name: Build Executables
+name: Build and Release
 
 on:
   push:
@@ -7,19 +7,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    # 1. Definição da Matriz
+  build_and_release:
     strategy:
       matrix:
-        os: [blacksmith-2vcpu-ubuntu-2404, blacksmith-2vcpu-windows-2025]
+        include:
+          - os: blacksmith-2vcpu-ubuntu-2404
+            name: Pyng-Linux
+          - os: blacksmith-2vcpu-windows-2025
+            name: pyng-win.zip
 
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -29,101 +34,30 @@ jobs:
           python -m pip install --upgrade pip
           pip install pygame pyinstaller
 
-      # --- Configurações Específicas do Windows ---
-      - name: Set Console=False for Windows Build
-        if: runner.os == 'Windows'
-        run: |
-          (Get-Content app.spec) -replace 'console=True', 'console=False' | Set-Content app.spec
-        shell: powershell
-
-      # --- Etapa de Compilação Linux (One-File) ---
-      - name: Compile Executable (Linux; One-File)
+      # --- Build Linux ---
+      - name: Build Linux
         if: runner.os == 'Linux'
         run: |
           pyinstaller -F --name Pyng --add-data "Fonts:Fonts" --add-data "Sons:Sons" --add-data "classes:classes" app.py
-
-      # 🎯 CORREÇÃO LINUX: Mover o binário para a raiz antes de empacotar 🎯
-      - name: Move Linux Binary to Root
-        if: runner.os == 'Linux'
-        run: |
-          # Renomeia para facilitar a identificação e garante que ele esteja na raiz do artefato.
           mv dist/Pyng Pyng-Linux
+          chmod +x Pyng-Linux
 
-      # --- Etapa de Compilação Windows (One-Dir) ---
-      - name: Compile Executable (Windows; One-Dir)
+      # --- Build Windows ---
+      - name: Build Windows
         if: runner.os == 'Windows'
         run: |
+          (Get-Content app.spec) -replace 'console=True', 'console=False' | Set-Content app.spec
           pyinstaller app.spec
-
-      # 🎯 NOVO PASSO: ZIPA A PASTA DO WINDOWS 🎯
-      - name: Zip Windows Artifact
-        if: runner.os == 'Windows'
-        run: |
-          # O arquivo ZIP é criado na raiz do runner (./pyng-win.zip)
           7z a -r pyng-win.zip dist/Pyng/
-        shell: cmd
+        shell: powershell
 
-      # --- UPLOAD LINUX ---
-      - name: Upload Build Artifacts (Linux)
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: pyng-build-ubuntu-latest
-          path: Pyng-Linux
-          compression-level: 0
-
-      # --- UPLOAD WINDOWS ---
-      - name: Upload Build Artifacts (Windows)
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: pyng-build-windows-latest
-          path: pyng-win.zip
-          compression-level: 0
-  release:
-    name: Create GitHub Release
-    needs: build
-    runs-on: blacksmith-2vcpu-ubuntu-2404
-
-    permissions:
-      contents: write
-
-    if: startsWith(github.ref, 'refs/tags/')
-
-    steps:
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          merge-multiple: true
-
-      # Passo de Debug para confirmar a estrutura de pastas baixadas
-      - name: List downloaded files (for debug)
-        run: ls -R artifacts
-
-      - name: Create Release
+      # --- Upload Direto para o Release ---
+      - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
+          files: ${{ matrix.name }}
           tag_name: ${{ github.ref_name }}
           name: Pyng - Release ${{ github.ref_name }}
-          body: |
-            Este é o lançamento ${{ github.ref_name }} do jogo Pyng.
-
-            Assets incluídos:
-            - Binário Linux
-            - Executável Windows (Compactado)
-
-            Como baixar e executar:
-            1. Vá para a seção de "Releases" deste repositório.
-            2. Baixe o arquivo correspondente ao seu sistema operacional (Pyng-Linux se você usa linux, ou pyng-win.zip se você usa Windows).
-            3. Torne o arquivo executável (Apenas Linux) com: chmod +x Pyng-Linux)
-            3. Extraia o conteúdo (apenas Windows) e execute o arquivo (Pyng-Linux para usuários do Linux, ou Pyng.exe dentro da pasta dist/Pyng para usuários de Windows).
-          draft: false
-          prerelease: false
-
-          # CAMINHOS SIMPLIFICADOS
-          files: |
-            artifacts/Pyng-Linux
-            artifacts/pyng-win.zip
+          body: "Lançamento oficial do Pyng."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
