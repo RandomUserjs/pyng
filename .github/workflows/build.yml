@@ -29,6 +29,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install pygame pyinstaller
 
+      - name: Fix MTU for Artifact Upload
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo ip link set dev eth0 mtu 1400
+          else
+            netsh interface ipv4 set subinterface "Ethernet" mtu=1400 store=persistent
+          fi
+        shell: bash
+
       # --- Configurações Específicas do Windows ---
       - name: Set Console=False for Windows Build
         if: runner.os == 'Windows'
@@ -66,7 +75,7 @@ jobs:
       # --- UPLOAD DE ARTEFATOS CORRIGIDO ---
       - name: Upload Build Artifacts (Linux)
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pyng-build-ubuntu-latest
           path: Pyng-Linux
@@ -74,7 +83,7 @@ jobs:
 
       - name: Upload Build Artifacts (Windows)
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pyng-build-windows-latest
           path: pyng-win.zip
@@ -93,10 +102,10 @@ jobs:
     steps:
       - name: Download all build artifacts
         # Usamos o 'pattern' para garantir que os arquivos certos sejam baixados
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
-          # pattern: pyng-build-*
+          pattern: pyng-build-*
 
       # Passo de Debug para confirmar a estrutura de pastas baixadas
       - name: List downloaded files (for debug)
