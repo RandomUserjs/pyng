@@ -66,7 +66,7 @@ jobs:
       # --- UPLOAD DE ARTEFATOS CORRIGIDO ---
       - name: Upload Build Artifacts (Linux)
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: pyng-build-ubuntu-latest
           path: Pyng-Linux
@@ -74,7 +74,7 @@ jobs:
 
       - name: Upload Build Artifacts (Windows)
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: pyng-build-windows-latest
           path: pyng-win.zip
@@ -93,10 +93,10 @@ jobs:
     steps:
       - name: Download all build artifacts
         # Usamos o 'pattern' para garantir que os arquivos certos sejam baixados
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           path: artifacts
-          pattern: pyng-build-*
+          # pattern: pyng-build-*
 
       # Passo de Debug para confirmar a estrutura de pastas baixadas
       - name: List downloaded files (for debug)
