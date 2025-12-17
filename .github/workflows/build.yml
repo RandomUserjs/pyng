@@ -58,6 +58,18 @@ jobs:
           files: ${{ matrix.name }}
           tag_name: ${{ github.ref_name }}
           name: Pyng - Release ${{ github.ref_name }}
-          body: "Lançamento oficial do Pyng."
+          body: |
+            Este é o lançamento ${{ github.ref_name }} do jogo Pyng.
+
+            Assets incluídos:
+            - Binário Linux
+            - Executável Windows (Compactado)
+
+            Como baixar e executar:
+            1. Vá para a seção de "Releases" deste repositório.
+            2. Baixe o arquivo correspondente ao seu sistema operacional (Pyng-Linux se você usa linux, ou pyng-win.zip se você usa Windows).
+            3. Torne o arquivo executável (Apenas Linux) com: chmod +x Pyng-Linux)
+            3. Extraia o conteúdo (apenas Windows) e execute o arquivo (Pyng-Linux para usuários do Linux, ou Pyng.exe dentro da pasta dist/Pyng para usuários de Windows).
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
