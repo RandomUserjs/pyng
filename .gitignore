@@ -6,5 +6,6 @@
 /dist
 ./classes/Gamini.py
 *.prof
-./classes/__pycache__/
-*.pyc
+./classes/__pycache__
+/**/*.pyc
+/**/__pycache__

@@ -377,6 +377,10 @@ class Game:
                             self.dir_da_bola.y = dir_raquete.y
 
                     self.dir_da_bola.y += dir_raquete.y
+                    print(dir_raquete.y)
+                    if abs(dir_raquete.y) <= 0.2 and random.randint(1, 10) == 1:
+                        self.dir_da_bola.y = 0.6 if random.randint(1,2) == 1 else -0.5
+                        
 
                     self.dir_da_bola = self.dir_da_bola.normalize()
 
